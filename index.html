@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>國立高雄科技大學 電子工程系 // 創新量子網格重製版</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ==========================================================================
+       高科大電子系 [量子網格] 未來感設計系統 (全中文優化版)
+       ========================================================================== */
+
+    :root {
+      --bg-dark-node: #030409;
+      --bg-deep-navy: #010104;
+      --neon-cyan: #00f2fe;
+      --neon-blue: #2979ff;
+      --neon-purple: #b156ff;
+      --neon-green: #12b76a;
+      --text-gray-light: #94a3b8;
+    }
+
+    body {
+      background-color: var(--bg-dark-node);
+      color: #f1f5f9;
+      font-family: 'Noto Sans TC', sans-serif;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    /* 通用工具與字體 */
+    .fw-black { font-weight: 900; }
+    .font-mono { font-family: 'Share Tech Mono', 'Noto Sans TC', monospace; }
+    .text-cyan { color: var(--neon-cyan); }
+    .text-indigo { color: var(--neon-blue); }
+    .text-purple { color: var(--neon-purple); }
+    .text-gray-light { color: var(--text-gray-light); }
+    .py-6 { padding: 100px 0; }
+    .fs-7 { font-size: 0.85rem; }
+    .tracking-widest { letter-spacing: 4px; }
+
+    /* 全站捲動顯現動畫 */
+    .reveal-section {
+      opacity: 0;
+      transform: translateY(30px) scale(0.98);
+      filter: blur(5px);
+      transition: all 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+      position: relative;
+    }
+    .reveal-section.active {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      filter: blur(0px);
+    }
+    .reveal-section::after {
+      content: ''; position: absolute;
+      bottom: -1px; left: 10%; width: 80%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+      opacity: 0; transition: opacity 1s ease 0.3s;
+    }
+    .reveal-section.active::after { opacity: 0.5; }
+
+    /* 導覽列毛玻璃效果 */
+    .nkust-nav {
+      background-color: rgba(1, 1, 4, 0.8);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(0, 242, 254, 0.1);
+    }
+
+    /* 量子網格粒子 Canvas 背景 */
+    #quantum-grid-canvas {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 1;
+      opacity: 0.5;
+    }
+    
+    /* 科技發光球體效果 */
+    .glow-blur-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(150px);
+      z-index: 2;
+      pointer-events: none;
+      opacity: 0.2;
+    }
+    .orb-cyan { width: 500px; height: 500px; background: var(--neon-cyan); top: -10%; right: -5%; }
+    .orb-purple { width: 600px; height: 600px; background: var(--neon-purple); bottom: 10%; left: -10%; }
+
+    /* 科技按鈕 */
+    .btn-tech-primary {
+      background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue));
+      color: #000 !important;
+      font-weight: 700;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 4px;
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.35);
+      transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+    .btn-tech-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 0 35px rgba(0, 242, 254, 0.6);
+    }
+    .btn-tech-outline {
+      background: transparent;
+      color: #fff !important;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+    .btn-tech-outline:hover {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.3);
+      background: rgba(0, 242, 254, 0.05);
+    }
+
+    /* 終端機風格公告欄 */
+    .terminal-container {
+      background: #010103;
+      border: 1px solid rgba(0, 242, 254, 0.15);
+      border-radius: 8px;
+    }
+    .terminal-log-entry {
+      padding: 14px 0;
+      border-bottom: 1px dashed rgba(148, 163, 184, 0.1);
+      transition: transform 0.2s ease;
+    }
+    .terminal-log-entry:hover { transform: translateX(5px); }
+    .log-link:hover { color: var(--neon-cyan) !important; }
+
+    /* 前瞻實驗室卡片 (霓虹流動邊框) */
+    .tech-card-wrapper {
+      position: relative;
+      background: rgba(255, 255, 255, 0.01);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+      z-index: 1;
+    }
+    .tech-card-wrapper::after {
+      content: ''; position: absolute;
+      top: -50%; left: -50%; width: 200%; height: 200%;
+      background: conic-gradient(from 0deg, transparent 20%, var(--neon-blue), transparent 40%);
+      animation: rotateNeonBorder 6s linear infinite;
+      opacity: 0; transition: opacity 0.4s ease;
+      z-index: -1;
+    }
+    .tech-card-body {
+      background: var(--bg-dark-node);
+      border-radius: 11px;
+      margin: 1px;
+      height: calc(100% - 2px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .tech-icon { font-size: 2.5rem; margin-bottom: 20px; }
+    
+    .tech-card-wrapper:hover { transform: translateY(-8px); }
+    .tech-card-wrapper:hover::after { opacity: 1; }
+    .tech-card-wrapper.is-cyan:hover { box-shadow: 0 10px 30px rgba(0, 242, 254, 0.15); }
+    .tech-card-wrapper.is-indigo:hover { box-shadow: 0 10px 30px rgba(41, 121, 255, 0.15); }
+    .tech-card-wrapper.is-purple:hover { box-shadow: 0 10px 30px rgba(177, 86, 255, 0.15); }
+
+    @keyframes rotateNeonBorder {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* 展示牆玻璃卡片效果 */
+    .project-glass-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 14px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: all 0.3s ease;
+    }
+    .project-glass-card:hover {
+      border-color: rgba(59, 131, 246, 0.4);
+      background: rgba(255, 255, 255, 0.04);
+      transform: scale(1.01);
+    }
+    .bg-cyan-glow { background: rgba(0, 242, 254, 0.1); color: var(--neon-cyan); border: 1px solid var(--neon-cyan); }
+    .bg-purple-glow { background: rgba(168, 85, 247, 0.1); color: var(--neon-purple); border: 1px solid var(--neon-purple); }
+
+    /* 黑客招生表單區塊 */
+    .terminal-form-window {
+      background: #020205;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .terminal-form-header {
+      background: #010103;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .terminal-dots .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+    .terminal-field {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.01) !important;
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+      color: var(--neon-cyan) !important;
+      padding: 14px;
+      border-radius: 6px;
+      font-family: monospace;
+    }
+    .terminal-field:focus {
+      outline: none;
+      border-color: var(--neon-purple) !important;
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
+    }
+
+    .animate-pulse { animation: pulse 2s infinite; }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.08); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @media (max-width: 991.98px) {
+      .display-3 { font-size: 2.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top nkust-nav shadow-lg z-50">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+        <i class="bi bi-cpu text-cyan fs-3 animate-pulse"></i>
+        <div class="lh-1">
+          <div class="fw-black fs-5 tracking-wide text-white">高科大電子</div>
+          <div class="font-mono text-cyan" style="font-size: 0.65rem;">國立高雄科技大學 電子工程系</div>
+        </div>
+      </a>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto gap-3 text-center font-mono fs-7">
+          <li class="nav-item"><a class="nav-link" href="#news">[ 系統公告 ]</a></li>
+          <li class="nav-item"><a class="nav-link" href="#labs">[ 前瞻實驗室 ]</a></li>
+          <li class="nav-item"><a class="nav-link" href="#showcase">[ 核心研究牆 ]</a></li>
+          <li class="nav-item"><a class="nav-link" href="#connect">[ 招生對接 ]</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <header id="home" class="min-vh-100 d-flex align-items-center position-relative overflow-hidden">
+    <canvas id="quantum-grid-canvas"></canvas>
+    
+    <div class="glow-blur-orb orb-cyan"></div>
+    <div class="glow-blur-orb orb-purple"></div>
+    
+    <div class="container position-relative z-3 pt-5">
+      <div class="row align-items-center py-5">
+        <div class="col-12 col-lg-8 text-center text-lg-start">
+          <div class="badge rounded-pill bg-cyan-glow px-3 py-2 font-mono mb-3 animate-pulse fs-8 tracking-widest">[ 製程電壓溫度狀態：穩定 // 晶片時序校正：已啟用 ]</div>
+          <h1 class="display-3 fw-black text-white mb-4 scramble-text" data-text="定義次世代電子工程。">
+            定義次世代電子工程。
+          </h1>
+          <p class="fs-5 text-gray-light mb-5 max-w-xl">
+            國立高雄科技大學電子工程系。整合半導體製程、系統晶片設計與嵌入式微控制器技術，培育具備實戰開發能力的高階硬體工程人才。
+          </p>
+          <div class="d-flex flex-column flex-sm-row justify-content-center justify-content-lg-start gap-4">
+            <a href="#labs" class="btn btn-tech-primary btn-lg font-mono">[ 探索_實驗室架構 ]</a>
+            <a href="#news" class="btn btn-tech-outline btn-lg font-mono">[ 檢視_系統日誌 ]</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section id="news" class="py-6 bg-deep-navy position-relative reveal-section">
+    <div class="container py-5">
+      <div class="row g-5 align-items-center">
+        <div class="col-12 col-lg-4 text-center text-lg-start">
+          <h2 class="fw-black text-white display-6 scramble-text" data-text="系務日誌">系務日誌</h2>
+          <p class="font-mono text-cyan tracking-widest mt-2 mb-4 fs-7">最新_系統日誌與事件</p>
+          <p class="text-gray-light fs-6 mb-0">捨棄傳統條列式佈局，採用即時終端機日誌風格，將選課通知、研究亮點進行系統分類，滑鼠滑過時即觸發霓虹縮放特效。</p>
+        </div>
+        <div class="col-12 col-lg-8">
+          <div class="terminal-container p-4 shadow-lg">
+            <div class="terminal-log-entry d-flex align-items-center">
+              <span class="badge bg-danger rounded-pill font-mono mx-2 fs-8">[ 熱門 ]</span>
+              <span class="font-mono text-gray-light fs-8 mx-2">2026.06.15</span>
+              <a href="#" class="log-link text-white text-decoration-none ms-2 fs-7 flex-grow-1">115學年度碩士班甄試入學招生簡章與工程晶片實作成果展公告</a>
+            </div>
+            <div class="terminal-log-entry d-flex align-items-center">
+              <span class="badge bg-warning rounded-pill font-mono text-dark mx-2 fs-8">[ 系統 ]</span>
+              <span class="font-mono text-gray-light fs-8 mx-2">2026.06.10</span>
+              <a href="#" class="log-link text-white text-decoration-none ms-2 fs-7 flex-grow-1">電路模擬伺服器維護與微控制器韌體開發說明會</a>
+            </div>
+            <div class="terminal-log-entry d-flex align-items-center">
+              <span class="badge bg-primary rounded-pill font-mono mx-2 fs-8">[ 教務 ]</span>
+              <span class="font-mono text-gray-light fs-8 mx-2">2026.06.02</span>
+              <a href="#" class="log-link text-white text-decoration-none ms-2 fs-7 flex-grow-1">狂賀！本系師生團隊榮獲鐵道智慧防護監控全國特優</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="labs" class="py-6 bg-deep-navy position-relative reveal-section">
+    <div class="container py-5 z-3 position-relative">
+      <div class="text-center mb-5">
+        <h2 class="fw-black text-white display-5 scramble-text" data-text="前瞻研發實驗室">前瞻研發實驗室</h2>
+        <p class="font-mono text-cyan tracking-widest mt-2 fs-7">前瞻_研發實驗室_架構</p>
+      </div>
+      
+      <div class="row g-4">
+        <div class="col-12 col-md-6 col-lg-4">
+          <div class="tech-card-wrapper h-100 is-cyan">
+            <div class="tech-card-body p-4">
+              <div class="tech-icon text-cyan"><i class="bi bi-motherboard-fill"></i></div>
+              <h4 class="text-white fw-bold mb-3 font-mono">晶片設計與模擬</h4>
+              <p class="text-gray-light text-sm mb-4">專注於奈米級系統晶片開發。深入探討高精度時間數位轉換器、電壓與製程變異下，晶片底層電路的精密時序模擬與誤差校正，優化硬體程式碼與系統效能。</p>
+              <span class="font-mono text-cyan fs-7 tracking-widest">// 實驗室_節點_01</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-12 col-md-6 col-lg-4">
+          <div class="tech-card-wrapper h-100 is-indigo">
+            <div class="tech-card-body p-4">
+              <div class="tech-icon text-blue"><i class="bi bi-cpu"></i></div>
+              <h4 class="text-white fw-bold mb-3 font-mono">嵌入式軟硬體整合</h4>
+              <p class="text-gray-light text-sm mb-4">以高效能微控制器為核心，結合感測元件與開源韌體編程。引入數位雙生電路模擬工具進行開發前的數位驗證，大幅縮短複雜硬體電路除錯與打樣週期。</p>
+              <span class="font-mono text-indigo fs-7 tracking-widest">// 實驗室_節點_02</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-12 col-md-12 col-lg-4">
+          <div class="tech-card-wrapper h-100 is-purple">
+            <div class="tech-card-body p-4">
+              <div class="tech-icon text-purple"><i class="bi bi-train-front-fill"></i></div>
+              <h4 class="text-white fw-bold mb-3 font-mono">智慧軌道與安全防護</h4>
+              <p class="text-gray-light text-sm mb-4">深耕前瞻鐵道機電整合。研發智慧障礙物偵測與通訊連鎖控制技術，實現平交道與車站月台無盲區防護。並針對集電靴供電穩定度進行精密數據監測，確保鐵道系統安全運行。</p>
+              <span class="font-mono text-purple fs-7 tracking-widest">// 實驗室_節點_03</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="showcase" class="py-6 bg-deep-navy reveal-section">
+    <div class="container py-4">
+      <div class="text-center mb-5">
+        <h2 class="fw-black text-white display-5 scramble-text" data-text="核心研發專案展示牆">核心研發專案展示牆</h2>
+        <p class="font-mono text-indigo tracking-widest mt-2 fs-7">核心_研發專案_展示陣列</p>
+      </div>
+      
+      <div class="row g-4">
+        <div class="col-12 col-lg-6">
+          <div class="project-glass-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <h4 class="text-white fw-bold">智慧軌道障礙物偵測防護系統</h4>
+              <span class="badge rounded-pill bg-cyan-glow font-mono animate-pulse fs-8">[ 實測運作中 ]</span>
+            </div>
+            <p class="text-gray-light text-sm mb-3">利用深度學習演算法與多感測器融合技術，實時監測平交道動態，能在毫秒級速度下發送障礙物警報至連鎖控制系統，達成百分之百安全防護。</p>
+            <div class="meta font-mono text-cyan fs-8 tracking-wide">// 標籤: 微控制器 // 控制邏輯 // 軌道安全</div>
+          </div>
+        </div>
+
+        <div class="col-12 col-lg-6">
+          <div class="project-glass-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <h4 class="text-white fw-bold">微控制器多路感測與模擬平台</h4>
+              <span class="badge rounded-pill bg-cyan-glow font-mono fs-8">[ 環境模擬中 ]</span>
+            </div>
+            <p class="text-gray-light text-sm mb-3">建構的大型數位雙生硬體專案。針對多路交通感測器輸入與通訊協議進行動態模擬與硬體程式碼優化，大幅增加嵌入式系統開發效能。</p>
+            <div class="meta font-mono text-cyan fs-8 tracking-wide">// 標籤: 開源硬體 // 電路模擬 // 韌體開發</div>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <div class="project-glass-card p-4">
+            <div class="row align-items-center g-4">
+              <div class="col-12 col-md-8">
+                <h4 class="text-white fw-bold mb-2">先進晶片電壓與製程變異自我校正架構</h4>
+                <p class="text-gray-light text-sm m-0">針對奈米級晶片，開發動態自我校正系統。能隨時偵測內部電壓與環境溫度波動，自動調整內部時序，免除晶片製造變異對系統效能的破壞，確保信號完整性。</p>
+              </div>
+              <div class="col-12 col-md-4 text-md-end">
+                <div class="meta font-mono text-purple mb-2 fs-8 tracking-wide">// 標籤: 晶片設計 // 變異校正 // 電子自動化</div>
+                <span class="badge rounded-pill bg-purple-glow font-mono px-3 py-2 fs-8 animate-pulse">[ 矽智財驗證通過 ]</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="connect" class="py-6 bg-deep-navy reveal-section">
+    <div class="container py-4">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
+          <div class="terminal-form-window shadow-2xl">
+            <div class="terminal-form-header d-flex align-items-center justify-content-between px-3 py-2">
+              <div class="terminal-dots d-flex gap-2">
+                <span class="dot bg-danger border border-danger border-opacity-50"></span>
+                <span class="dot bg-warning border border-warning border-opacity-50"></span>
+                <span class="dot bg-success border border-success border-opacity-50"></span>
+              </div>
+              <span class="text-gray-light font-mono fs-7 tracking-wide">高科大電子_學術對接_終端.sh</span>
+              <div style="width: 42px;"></div>
+            </div>
+            
+            <div class="terminal-form-body p-4 font-mono">
+              <p class="text-success m-0">$ 啟動連線協議 --目標 "高科大電子_聯絡端點"</p>
+              <p class="text-gray-light mb-4">正在建立高安全級別數據鏈結通道...</p>
+              
+              <form class="cyber-form" onsubmit="event.preventDefault(); alert('傳輸成功！已掛載高科大電子系學術對接協議。');">
+                <div class="row g-4">
+                  <div class="col-12 col-md-6">
+                    <label class="text-cyan d-block mb-2 fs-7 tracking-wider">&gt; 輸入_學生身分識別:</label>
+                    <input type="text" class="terminal-field" placeholder="// 鍵入您的代號或姓名" required>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="text-indigo d-block mb-2 fs-7 tracking-wider">&gt; 設定_安全電子郵件:</label>
+                    <input type="email" class="terminal-field" placeholder="// user@example.edu.tw" required>
+                  </div>
+                  <div class="col-12">
+                    <label class="text-purple d-block mb-2 fs-7 tracking-wider">&gt; 撰寫_申請對接訊息:</label>
+                    <textarea class="terminal-field" rows="3" placeholder="// 簡述您的學術需求或研究構想..." required></textarea>
+                  </div>
+                  <div class="col-12">
+                    <button type="submit" class="btn btn-tech-primary w-100 font-mono tracking-widest py-3 fs-6">
+                      [ 執行_資料加密傳輸 ]
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="py-4 text-center border-top border-secondary-subtle Bg-dark-node">
+    <p class="text-gray-light m-0 font-mono fs-7">&copy; 2026 國立高雄科技大學 電子工程系 // 創新量子網格重製版展示</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      
+      // ==========================================
+      // 功能一：賽博龐克「亂碼解碼」特效 (加入中文科技字元庫)
+      // ==========================================
+      class ScrambleText {
+        constructor(el) {
+          this.el = el;
+          // 替換為中英數混合的科技感亂碼字元
+          this.chars = '!<>-_\/[]{}—=+*^?#_0123456789電晶機網算碼數資軌道邏輯控制';
+          this.update = this.update.bind(this);
+        }
+        
+        setText(newText) {
+          this.oldText = this.el.innerText;
+          this.newText = newText;
+          this.promise = new Promise(resolve => this.resolve = resolve);
+          this.queue = [];
+          
+          for (let i = 0; i < this.newText.length; i++) {
+            const startFrame = Math.floor(Math.random() * 25);
+            const endFrame = startFrame + Math.floor(Math.random() * 25);
+            this.queue.push({
+              to: this.newText[i],
+              start: startFrame,
+              end: endFrame,
+              currentChar: ''
+            });
+          }
+          this.frame = 0;
+          this.update();
+          return this.promise;
+        }
+
+        update() {
+          let outputHTML = '';
+          let decodedCount = 0;
+
+          for (let i = 0; i < this.queue.length; i++) {
+            let { to, start, end, currentChar } = this.queue[i];
+
+            if (this.frame >= end) {
+              decodedCount++;
+              outputHTML += to;
+            } else if (this.frame >= start) {
+              if (!currentChar || Math.random() < 0.28) {
+                currentChar = this.chars[Math.floor(Math.random() * this.chars.length)];
+                this.queue[i].currentChar = currentChar;
+              }
+              outputHTML += `<span class="text-cyan" style="opacity: 0.6;">${currentChar}</span>`;
+            } else {
+              outputHTML += '';
+            }
+          }
+
+          this.el.innerHTML = outputHTML;
+
+          if (decodedCount === this.queue.length) {
+            this.resolve();
+          } else {
+            this.frame++;
+            this.frameId = requestAnimationFrame(this.update);
+          }
+        }
+      }
+
+      // ==========================================
+      // 功能二：全站捲動顯現動畫
+      // ==========================================
+      const revealSections = document.querySelectorAll('.reveal-section');
+      
+      const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+            
+            const titleEl = entry.target.querySelector('.scramble-text');
+            if (titleEl && !titleEl.hasAttribute('data-counted')) {
+              const decoder = new ScrambleText(titleEl);
+              const originalText = titleEl.getAttribute('data-text');
+              decoder.setText(originalText);
+              titleEl.setAttribute('data-counted', 'true');
+            }
+          }
+        });
+      }, { threshold: 0.15 });
+
+      revealSections.forEach(section => {
+        if (section.id === 'home') {
+           section.classList.add('active');
+           const heroTitle = section.querySelector('.scramble-text');
+           if (heroTitle) {
+               const decoder = new ScrambleText(heroTitle);
+               decoder.setText(heroTitle.getAttribute('data-text'));
+               heroTitle.setAttribute('data-counted', 'true');
+           }
+        } else {
+           revealObserver.observe(section);
+        }
+      });
+
+      // ==========================================
+      // 功能三：量子網格粒子動態背景
+      // ==========================================
+      const canvas = document.getElementById('quantum-grid-canvas');
+      const ctx = canvas.getContext('2d');
+      
+      let particles = [];
+      let width = 0;
+      let height = 0;
+
+      function resize() {
+        width = canvas.width = canvas.offsetWidth;
+        height = canvas.height = canvas.offsetHeight;
+        
+        const particleCount = width < 768 ? 40 : 80;
+        
+        particles = [];
+        for (let i = 0; i < particleCount; i++) {
+          particles.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            velX: (Math.random() - 0.5) * 0.5,
+            velY: (Math.random() - 0.5) * 0.5,
+            size: Math.random() * 2 + 0.5
+          });
+        }
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, width, height);
+        
+        ctx.fillStyle = 'rgba(18, 183, 106, 0.6)'; 
+        ctx.strokeStyle = 'rgba(0, 242, 254, 0.1)'; 
+        ctx.lineWidth = 0.5;
+
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          
+          p.x += p.velX;
+          p.y += p.velY;
+          
+          if (p.x < 0 || p.x > width) p.velX *= -1;
+          if (p.y < 0 || p.y > height) p.velY *= -1;
+          
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fill();
+          
+          for (let j = i + 1; j < particles.length; j++) {
+            const p2 = particles[j];
+            const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+            
+            if (dist < 150) {
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.stroke();
+            }
+          }
+        }
+        
+        requestAnimationFrame(draw);
+      }
+
+      window.addEventListener('resize', resize);
+      resize();
+      draw();
+    });
+  </script>
+</body>
+</html>
